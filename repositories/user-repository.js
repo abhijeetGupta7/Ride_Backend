@@ -7,7 +7,7 @@ class UserRepository extends CrudRepository {
     }
     
     async getUserByEmail(emailId) {
-        const user=User.findOne({email: emailId});
+        const user=User.findOne({email: emailId}).select("+password");
         return user;
     }
 }

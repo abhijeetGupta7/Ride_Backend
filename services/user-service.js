@@ -30,9 +30,10 @@ class UserService {
         }
     }
 
-    async login({ email, password }) {
+    async loginUser({ email, password }) {
         try {
             const user = await this.#userRepository.getUserByEmail(email);
+            console.log(user);
             if (!user) {
                 throw new Error("User does not exist");
             }
@@ -41,9 +42,6 @@ class UserService {
             if (!isMatch) {
                 throw new Error("Invalid email or password");
             }
-
-            const token = await createToken({ userId: user._id, userEmail: user.email });
-
             return user;
         } catch (error) {
             console.error("Error in login:", error);

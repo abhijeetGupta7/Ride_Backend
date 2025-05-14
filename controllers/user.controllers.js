@@ -35,4 +35,27 @@ async function registerUser(req, res) {
     }
 }
 
-module.exports = { registerUser };
+// TODO: Remove password from the response before returning user data
+async function loginUser(req, res) {
+    try {
+        const { email, password } = req.body;
+        const user = await userService.loginUser({ email, password });  
+    
+        const token = await createToken({
+            userId: user._id,
+            userEmail: user.email
+        });
+    
+        successReponse.data = { user, token };
+        successReponse.message = "User logged in successfully"; 
+        return res.status(StatusCodes.OK).json(successReponse);        
+    } catch (error) {
+        console.error("Login Error:", error);
+        errorResponse.message = "Failed to login user";
+        errorResponse.error = error.message || error;     // small fix, can be improved
+        return res.status(StatusCodes.UNAUTHORIZED).json(errorResponse);
+    }
+}
+
+
+module.exports = { registerUser, loginUser };

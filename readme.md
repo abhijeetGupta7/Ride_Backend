@@ -111,4 +111,88 @@ The request body should be in JSON format and include the following fields:
 }
 ```
 
+## `/user/login` Endpoint
+
+### Description
+
+Authenticates a user using their email and password, and returns a JWT token along with full user data **(including the password)** as currently implemented.
+
+---
+
+### HTTP Method
+
+`POST`
+
+---
+
+### Request Body
+
+The request body should be in JSON format and include the following fields:
+
+* `email` (string, required): User's registered email address.
+* `password` (string, required): User's account password.
+
+---
+
+### Example Request
+
+```json
+{
+  "email": "john.doe@example.com",
+  "password": "password123"
+}
+```
+
+---
+
+### Successful Response (`200`)
+
+Returns the user object (currently including the hashed password) and a JWT token.
+
+```json
+{
+  "success": true,
+  "message": "User logged in successfully",
+  "data": {
+    "user": {
+      "_id": "user_id",
+      "fullname": {
+        "firstname": "John",
+        "lastname": "Doe"
+      },
+      "email": "john.doe@example.com",
+      "password": "$2a$10$hashedPasswordHere"
+    },
+    "token": "jwt_token"
+  }
+}
+```
+
+---
+
+### Error Responses
+
+#### `401 Unauthorized`
+
+* **User does not exist**
+
+```json
+{
+  "success": false,
+  "message": "Failed to login user",
+  "error": "User does not exist",
+  "data": {}
+}
+```
+
+* **Incorrect password**
+
+```json
+{
+  "success": false,
+  "message": "Failed to login user",
+  "error": "Invalid email or password",
+  "data": {}
+}
+```
 
