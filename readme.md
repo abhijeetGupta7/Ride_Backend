@@ -196,3 +196,151 @@ Returns the user object (currently including the hashed password) and a JWT toke
 }
 ```
 
+## `/user/profile` Endpoint
+
+### Description
+
+Retrieves the authenticated user's profile information.
+
+---
+
+### HTTP Method
+
+`GET`
+
+---
+
+### Authentication
+
+Requires a valid JWT token, provided either as:
+
+* **HTTP-only cookie** (`token`)
+  **or**
+* **Authorization header**: `Bearer <token>`
+
+---
+
+### Example Request
+
+```http
+GET /api/v1/user/profile
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+---
+
+### Successful Response (`200`)
+
+```json
+{
+  "success": true,
+  "message": "User profile retrieved successfully",
+  "data": {
+    "_id": "user_id",
+    "fullname": {
+      "firstname": "John",
+      "lastname": "Doe"
+    },
+    "email": "john.doe@example.com"
+    // ...other fields
+  }
+}
+```
+
+---
+
+### Error Responses
+
+#### `401 Unauthorized`
+
+```json
+{
+  "success": false,
+  "message": "Authentication required"
+}
+```
+
+#### `404 Not Found`
+
+```json
+{
+  "success": false,
+  "message": "User not found"
+}
+```
+
+#### `500 Internal Server Error`
+
+```json
+{
+  "success": false,
+  "message": "Failed to retrieve user profile",
+  "error": "Error details"
+}
+```
+
+---
+
+## `/user/logout` Endpoint
+
+### Description
+
+Logs out the user by blacklisting the provided JWT token and clearing cookie Prevents future use of the same token.
+
+---
+
+### HTTP Method
+
+`POST`
+
+---
+
+### Authentication
+
+Requires a valid JWT token, provided as:
+
+* **Authorization header**: `Bearer <token>`
+
+---
+
+### Example Request
+
+```http
+POST /api/v1/user/logout
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+```
+
+---
+
+### Successful Response (`200`)
+
+```json
+{
+  "success": true,
+  "message": "User logged out successfully"
+}
+```
+
+---
+
+### Error Responses
+
+#### `401 Unauthorized`
+
+```json
+{
+  "success": false,
+  "message": "Token missing or invalid"
+}
+```
+
+#### `500 Internal Server Error`
+
+```json
+{
+  "success": false,
+  "message": "Failed to logout user",
+  "error": "Error details"
+}
+```
+

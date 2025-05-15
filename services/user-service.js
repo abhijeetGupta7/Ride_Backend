@@ -49,21 +49,21 @@ class UserService {
         }
     }
 
-    async authenticateUser(token) {
-        try {
-            const decodedToken = await verifyToken(token);
+    // async authenticateUser(token) {
+    //     try {
+    //         const decodedToken = await verifyToken(token);
 
-            const user = await this.#userRepository.get(decodedToken.userId);
-            if (!user) {
-                throw new Error("User not found");
-            }
+    //         const user = await this.#userRepository.get(decodedToken.userId);
+    //         if (!user) {
+    //             throw new Error("User not found");
+    //         }
 
-            return decodedToken;
-        } catch (error) {
-            console.error("Error in authenticateUser:", error);
-            throw new Error("Authentication failed");
-        }
-    }
+    //         return decodedToken;
+    //     } catch (error) {
+    //         console.error("Error in authenticateUser:", error);
+    //         throw new Error("Authentication failed");
+    //     }
+    // }
 
     async getUser(userId) {
         try {
