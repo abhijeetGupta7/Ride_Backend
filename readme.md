@@ -2,13 +2,14 @@
 
 This is the backend for the Ride App, built using Node.js, Express, and MongoDB. It provides APIs for user registration and authentication.
 
-## Table of Contents
+## 📚 Table of Contents
 
 * [Installation](#installation)
 * [Environment Variables](#environment-variables)
 * [API Documentation](#api-documentation)
 
   * [User Routes](#user-routes)
+  * [Captain Routes](#captain-routes)
 
 ---
 
