@@ -58,6 +58,8 @@ http://localhost:<PORT>/api/v1
 
 ---
 
+## User Routes
+
 ## `/user/register` Endpoint
 
 ### Description
@@ -345,6 +347,8 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
 }
 ```
 ---
+
+## Captain Routes
 
 ## `/captain/register` Endpoint
 
