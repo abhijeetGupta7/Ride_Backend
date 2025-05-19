@@ -343,4 +343,295 @@ Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
   "error": "Error details"
 }
 ```
+---
+
+## `/captain/register` Endpoint
+
+### Description
+
+Registers a new captain by creating an account with personal and vehicle details.
+
+### HTTP Method
+
+`POST`
+
+### Request Body
+
+Send the following fields in JSON format:
+
+* `fullname` (object):
+
+  * `firstname` (string, required): First name of the captain (minimum 3 characters).
+  * `lastname` (string, optional): Last name of the captain (minimum 3 characters if provided).
+* `email` (string, required): Valid email of the captain.
+* `password` (string, required): Password (minimum 6 characters).
+* `vehicle` (object, required):
+
+  * `color` (string, required): Color of the vehicle.
+  * `plate` (string, required): Vehicle registration plate.
+  * `capacity` (integer, required): Capacity of the vehicle.
+  * `vehicleType` (string, required): Either `car`, `bike`, or `auto`.
+
+### Example Request
+
+```json
+{
+  "fullname": {
+    "firstname": "Test",
+    "lastname": "Captain"
+  },
+  "email": "test4d.captain@example.com",
+  "password": "password123",
+  "vehicle": {
+    "color": "Black",
+    "plate": "TEST1234",
+    "capacity": 6,
+    "vehicleType": "car"
+  }
+}
+```
+
+### Example Successful Response (`201`)
+
+```json
+{
+  "success": true,
+  "error": {},
+  "message": "Captain registered successfully",
+  "data": {
+    "captain": {
+      "_id": "682b81c52b57c9d2f7b1cae2",
+      "fullname": {
+        "firstname": "Test",
+        "lastname": "Captain"
+      },
+      "email": "test4d.captain@example.com",
+      "password": "$2b$10$nS9AovbTw28AtjK1BwsA1e7mP2tNNFK2emxVLBTfwzHGGfa/UvSSW",
+      "status": "inactive",
+      "vehicle": {
+        "color": "Black",
+        "plate": "TEST1234",
+        "capacity": 6,
+        "vehicleType": "car"
+      },
+      "__v": 0
+    },
+    "token": "jwt_token_here"
+  }
+}
+```
+
+---
+
+## `/captain/login` Endpoint
+
+### Description
+
+Authenticates a captain by email and password, returning a token and full profile.
+
+### HTTP Method
+
+`POST`
+
+### Request Body
+
+```json
+{
+  "email": "test2.captain@example.com",
+  "password": "password123"
+}
+```
+
+### Successful Response (`200`)
+
+```json
+{
+  "success": true,
+  "error": {},
+  "message": "Captain logged in successfully",
+  "data": {
+    "captain": {
+      "_id": "682b80731be0ff7aad7df64a",
+      "fullname": {
+        "firstname": "Test",
+        "lastname": "Captain"
+      },
+      "email": "test2.captain@example.com",
+      "password": "$2b$10$umgU/khxrkt/bADkopZfr.OTu64b.7tHEkkABjWb3Kr5B.W89T.gm",
+      "status": "inactive",
+      "vehicle": {
+        "color": "Black",
+        "plate": "TEST1234",
+        "capacity": 6,
+        "vehicleType": "car"
+      },
+      "__v": 0
+    },
+    "token": "jwt_token_here"
+  }
+}
+```
+
+---
+
+### Error Responses
+
+#### `401 Unauthorized`
+
+* **Captain does not exist**
+
+```json
+{
+  "success": false,
+  "message": "Failed to login captain",
+  "error": "Captain does not exist",
+  "data": {}
+}
+```
+
+* **Invalid credentials**
+
+```json
+{
+  "success": false,
+  "message": "Failed to login captain",
+  "error": "Invalid email or password",
+  "data": {}
+}
+```
+
+---
+
+## `/captain/profile` Endpoint
+
+### Description
+
+Fetches the authenticated captain’s profile.
+
+### HTTP Method
+
+`GET`
+
+### Authentication
+
+Requires a valid JWT token via:
+
+* **HTTP-only Cookie** (`captainToken`)
+* **or** `Authorization` header: `Bearer <token>`
+
+### Example Request
+
+```http
+GET /api/v1/captain/profile
+Authorization: Bearer jwt_token_here
+```
+
+### Successful Response (`200`)
+
+```json
+{
+  "success": true,
+  "message": "Captain profile retrieved successfully",
+  "data": {
+    "_id": "682b80731be0ff7aad7df64a",
+    "fullname": {
+      "firstname": "Test",
+      "lastname": "Captain"
+    },
+    "email": "test2.captain@example.com",
+    "status": "inactive",
+    "vehicle": {
+      "color": "Black",
+      "plate": "TEST1234",
+      "capacity": 6,
+      "vehicleType": "car"
+    }
+  }
+}
+```
+
+### Error Responses
+
+#### `401 Unauthorized`
+
+```json
+{
+  "success": false,
+  "message": "Authentication required"
+}
+```
+
+#### `404 Not Found`
+
+```json
+{
+  "success": false,
+  "message": "Captain not found"
+}
+```
+
+#### `500 Internal Server Error`
+
+```json
+{
+  "success": false,
+  "message": "Failed to retrieve captain profile",
+  "error": "Error details"
+}
+```
+
+---
+
+## `/captain/logout` Endpoint
+
+### Description
+
+Logs out the captain by invalidating the token and clearing the cookie.
+
+### HTTP Method
+
+`POST`
+
+### Authentication
+
+Requires JWT via `Authorization` header: `Bearer <token>`
+
+### Example Request
+
+```http
+POST /api/v1/captain/logout
+Authorization: Bearer jwt_token_here
+```
+
+### Successful Response (`200`)
+
+```json
+{
+  "success": true,
+  "message": "Captain logged out successfully"
+}
+```
+
+### Error Responses
+
+#### `401 Unauthorized`
+
+```json
+{
+  "success": false,
+  "message": "Token missing or invalid"
+}
+```
+
+#### `500 Internal Server Error`
+
+```json
+{
+  "success": false,
+  "message": "Failed to logout captain",
+  "error": "Error details"
+}
+```
+
+---
 

@@ -1,4 +1,4 @@
-const UserRepository = require("../repositories/user-repository");
+const UserRepository = require("../repositories/user.repository");
 const { createToken, verifyToken } = require("../utils/common/auth");
 const bcrypt = require("bcrypt");
 

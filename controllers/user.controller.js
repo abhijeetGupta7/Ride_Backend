@@ -1,5 +1,5 @@
 const { StatusCodes } = require("http-status-codes");
-const UserService = require("../services/user-service");
+const UserService = require("../services/user.service");
 const { createToken, verifyToken } = require("../utils/common/auth");
 const successReponse = require("../utils/common/success-reponse");
 const errorResponse = require("../utils/common/error-response");
@@ -23,7 +23,7 @@ async function registerUser(req, res) {
             userEmail:user.email
         }); 
 
-        res.cookie("token", token, {
+        res.cookie("userToken", token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === "production",
             sameSite: "Strict",
