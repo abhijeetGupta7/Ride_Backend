@@ -4,6 +4,7 @@ const { createToken, verifyToken } = require("../utils/common/auth");
 const successReponse = require("../utils/common/success-reponse");
 const errorResponse = require("../utils/common/error-response");
 const blacklistedTokenModel = require("../models/blacklistedToken.model");
+const { NODE_ENV } = require("../config/server-config");
 
 const userService = new UserService();
 
@@ -23,11 +24,12 @@ async function registerUser(req, res) {
             userEmail:user.email
         }); 
 
+      
         res.cookie("userToken", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "Strict",
-            maxAge: 24 * 60 * 60 * 1000 // 1 day
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "Strict" : "Lax",
+        maxAge: 24 * 60 * 60 * 1000  // 1 day
         });
       
         successReponse.data = { user, token };
@@ -53,12 +55,13 @@ async function loginUser(req, res) {
             userEmail: user.email
         });
 
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === "production", // Set to true in production
-            sameSite: "Strict", 
-            maxAge: 24 * 60 * 60 * 1000 // 1 day
+        res.cookie("userToken", token, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === "production",
+        sameSite: process.env.NODE_ENV === "production" ? "Strict" : "Lax",
+        maxAge: 24 * 60 * 60 * 1000
         });
+
     
         successReponse.data = { user, token };
         successReponse.message = "User logged in successfully"; 
@@ -96,8 +99,8 @@ async function logoutUser(req, res) {
         let token;
 
         // Extract from cookie
-        if (req.cookies?.token) {
-            token = req.cookies.token;
+        if (req.cookies?.userToken) {
+            token = req.cookies.userToken;
         }
         // Extract from Authorization header
         else if (req.headers.authorization?.startsWith("Bearer ")) {
@@ -114,10 +117,8 @@ async function logoutUser(req, res) {
         await blacklistedTokenModel.create({
             token,
         });
-
         // Clear the cookie
-        res.clearCookie("token");
-
+        res.clearCookie("userToken");
         successReponse.message = "User logged out successfully";
         return res.status(StatusCodes.OK).json(successReponse);
 

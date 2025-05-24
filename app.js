@@ -2,12 +2,13 @@ const express = require('express');
 const apiRouter = require('./routes/apiRouter.routes');
 const cors=require("cors");
 const cookieParser = require('cookie-parser');
+const { CLIENT_URL } = require('./config/server-config');
 
 const app=express();
 
 // Global Middleware
 app.use(cors({
-    origin: "*",
+    origin: CLIENT_URL,
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
