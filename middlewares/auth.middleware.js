@@ -23,7 +23,9 @@ async function authenticateUser(req, res, next) {
             throw new Error("No token provided or invalid token format");
         }
 
-        const isBlacklistedToken = await blacklistedTokenModel.findOne({token: token})
+        const decodedToken = await verifyToken(token);
+
+        const isBlacklistedToken = await blacklistedTokenModel.findOne({ jti: decodedToken.jti });
         console.log("Is Blacklisted Token:", isBlacklistedToken);
         if (isBlacklistedToken) {
             throw new Error("Token is blacklisted");
@@ -61,7 +63,10 @@ async function authenticateCaptain(req, res, next) {
             throw new Error("No token provided or invalid token format");
         }
 
-        const isBlacklistedToken = await blacklistedTokenModel.findOne({token: token})
+        const decodedToken = await verifyToken(token);
+
+        const isBlacklistedToken = await blacklistedTokenModel.findOne({jti: decodedToken.jti});
+
         console.log("Is Blacklisted Token:", isBlacklistedToken);
         if (isBlacklistedToken) {
             throw new Error("Token is blacklisted");

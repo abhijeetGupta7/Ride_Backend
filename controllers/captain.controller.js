@@ -2,7 +2,7 @@ const CaptainService = require('../services/captain.service');
 const { StatusCodes } = require('http-status-codes');
 const successReponse = require('../utils/common/success-reponse');
 const errorResponse = require('../utils/common/error-response');
-const { createToken } = require('../utils/common/auth');
+const { createToken, verifyToken } = require('../utils/common/auth');
 const blacklistedTokenModel = require("../models/blacklistedToken.model");
 
 const captainService = new CaptainService();
@@ -107,8 +107,13 @@ async function logoutCaptain(req, res) {
         return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
     }
     
+    const decodedToken= await verifyToken(token);
+
     // Add the token to the blacklist
-    await blacklistedTokenModel.create({ token });
+    await blacklistedTokenModel.create({
+        jti:decodedToken.jti,
+        token: token,
+    });
     
     res.clearCookie('captainToken');
     successReponse.message = 'Captain logged out successfully';

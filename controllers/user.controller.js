@@ -113,10 +113,14 @@ async function logoutUser(req, res) {
             });
         }
 
-        // Save to blacklist
+        const decodedToken= await verifyToken(token);
+        
+        // Add the token to the blacklist
         await blacklistedTokenModel.create({
-            token,
+            jti:decodedToken.jti,
+            token: token,
         });
+
         // Clear the cookie
         res.clearCookie("userToken");
         successReponse.message = "User logged out successfully";

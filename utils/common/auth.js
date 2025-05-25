@@ -1,33 +1,60 @@
 const jwt = require("jsonwebtoken");
-const { JWT_SECRET } = require("../../config/server-config");
+const crypto = require("crypto"); // Node's built-in crypto module
+const { JWT_SECRET, NODE_ENV } = require("../../config/server-config");
 
 async function createToken(payload) {
-    return new Promise((resolve,reject) => {
-        jwt.sign(payload, JWT_SECRET, {expiresIn: '24h'}, (err,token)=>{
-            if(err) {
-                console.log(err);
-                reject(err);
-            }
-            console.log('token created',token);
-            resolve(token);   
-        });
-    });   
-}
+    return new Promise((resolve, reject) => {
+        // Add unique JTI and issued-at timestamp to payload
+        const enhancedPayload = {
+            ...payload,
+            jti: crypto.randomBytes(16).toString("hex"), // Unique token ID
+            iat: Math.floor(Date.now() / 1000) // Issued-at timestamp
+        };
 
+        jwt.sign(
+            enhancedPayload,
+            JWT_SECRET,
+            { 
+                expiresIn: '24h', 
+                algorithm: 'HS256' // Explicitly specified algorithm
+            },
+            (err, token) => {
+                if (err) {
+                    console.error("[JWT] Signing error:", err);
+                    reject(err);
+                    return;
+                }
+                if (NODE_ENV === "development") {
+                    console.log("[JWT] Token created:", token); 
+                }
+                resolve(token);
+            }
+        );
+    });
+}
 
 async function verifyToken(token) {
-    return new Promise((resolve,reject)=>{
-        jwt.verify(token,JWT_SECRET, (err,decodedToken) => {
-            if(err) {
-                console.log(err);
-                reject(err);
+    return new Promise((resolve, reject) => {
+        jwt.verify(
+            token,
+            JWT_SECRET,
+            { 
+                algorithms: ["HS256"], // Prevent algorithm confusion attacks
+                ignoreExpiration: false // Enforce expiry checks
+            },
+            (err, decodedToken) => {
+                if (err) {
+                    console.error("[JWT] Verification failed:", err);
+                    reject(err);
+                    return;
+                }
+                resolve(decodedToken);
             }
-            resolve(decodedToken);
-        });
-    })
+        );
+    });
 }
 
-module.exports={
+module.exports = {
     createToken,
     verifyToken
-}
+};

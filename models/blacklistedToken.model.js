@@ -4,7 +4,11 @@ const blacklistedTokenSchema = new mongoose.Schema({
   token: {
     type: String,
     required: true,
-    unique: true
+    index: true // Index for faster lookups 
+  },
+  jti: {
+    type: String,
+    unique: true // Track unique token IDs instead of full tokens
   },
   createdAt: {
     type: Date,
@@ -12,11 +16,11 @@ const blacklistedTokenSchema = new mongoose.Schema({
   },
   expiresAt: {
     type: Date,
-    default: () => new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours from now
-}
+    default: () => new Date(Date.now() + 24 * 60 * 60 * 1000) // 24h TTL
+  }
 });
 
-// Auto-remove document when expiresAt is reached
+// Auto-expire documents
 blacklistedTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 });
 
 module.exports = mongoose.model("BlacklistedToken", blacklistedTokenSchema);
