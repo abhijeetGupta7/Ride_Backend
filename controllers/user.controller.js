@@ -38,6 +38,11 @@ async function registerUser(req, res) {
 
     } catch (error) {
         console.error("Register Error:", error);
+        if(error.code === 11000 && error.keyPattern?.email) {
+            errorResponse.message = "User already exists";
+            errorResponse.error = `Email ${error.keyValue.email} is already registered`;
+            return res.status(StatusCodes.CONFLICT).json(errorResponse);
+        }
         errorResponse.message = "Failed to register user";
         errorResponse.error = error;
         return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);

@@ -4,8 +4,10 @@ const successReponse = require('../utils/common/success-reponse');
 const errorResponse = require('../utils/common/error-response');
 const { createToken, verifyToken } = require('../utils/common/auth');
 const blacklistedTokenModel = require("../models/blacklistedToken.model");
+const MapsService = require('../services/maps.service');
 
 const captainService = new CaptainService();
+const mapsService = new MapsService();
 
 async function registerCaptain(req,res) {
     try {
@@ -39,6 +41,11 @@ async function registerCaptain(req,res) {
         successReponse.message = 'Captain registered successfully';
         return res.status(StatusCodes.CREATED).json(successReponse);
     } catch (error) {
+        if(error.code===11000 && error.keyPattern?.email) {
+            errorResponse.message = 'Captain already exists';
+            errorResponse.error = `Email ${error.keyValue.email} is already registered`;
+            return res.status(StatusCodes.CONFLICT).json(errorResponse);
+        }
         console.error('Register Error:', error);
         errorResponse.message = 'Failed to register captain';
         errorResponse.error = error || error.message;   
@@ -70,7 +77,7 @@ async function loginCaptain(req, res) {
         console.error('Login Error:', error);
         errorResponse.message = 'Failed to login captain';
         errorResponse.error = error.message || error;     // small fix, can be improved
-        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
+        return res.status(StatusCodes.UNAUTHORIZED).json(errorResponse);
     }
 }
 
@@ -120,10 +127,60 @@ async function logoutCaptain(req, res) {
     return res.status(StatusCodes.OK).json(successReponse);
 }
 
+async function getCaptainsInRadius(req, res) {
+    try {
+        const { latitude, longitude, radius, vehicleType } = req.query;
+        if (!latitude || !longitude || !radius) {
+            errorResponse.message = 'Missing required parameters';
+            return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
+        }
+        
+        const center = [parseFloat(longitude), parseFloat(latitude)];
+        const captains = await captainService.getCaptainsInRadius(center, radius, vehicleType);
+        successReponse.data = captains;
+        successReponse.message = 'Captains fetched successfully';
+        return res.status(StatusCodes.OK).json(successReponse);
+    } catch (error) {
+        console.error('Get Captains In Radius Error:', error);
+        errorResponse.message = 'Failed to fetch captains in radius';
+        errorResponse.error = error.message || error;
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
+    }
+}
+
+async function updateCaptainLocation(req, res) {
+    try {
+        const { latitude, longitude } = req.body;
+        const captainId = req.captain?.captainId;
+
+        if (!latitude || !longitude) {
+            errorResponse.message = 'Latitude and longitude are required';
+            return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
+        }
+
+        const coords = [parseFloat(longitude), parseFloat(latitude)];
+        const updatedCaptain = await captainService.updateCaptainLocation(captainId, coords);
+        successReponse.data = updatedCaptain;
+        successReponse.message = 'Captain location updated successfully';
+        return res.status(StatusCodes.OK).json(successReponse);
+    } catch (error) {
+        console.error('Update Captain Location Error:', error);
+        errorResponse.message = 'Failed to update captain location';
+        errorResponse.error = error.message || error;
+        return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
+    }
+}
+
+
+
+
+
+
 module.exports = {
     registerCaptain,
     loginCaptain,
     getCaptainProfile,
-    logoutCaptain
-    
+    logoutCaptain,  
+    getCaptainsInRadius,
+    updateCaptainLocation
 }

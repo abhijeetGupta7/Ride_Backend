@@ -1,8 +1,8 @@
 const express= require('express');
-const { body } = require('express-validator');
+const { body, query } = require('express-validator');
 const validate = require('../../middlewares/validate');
 const captainController = require('../../controllers/captain.controller');
-const { authenticateCaptain } = require('../../middlewares/auth.middleware');
+const { authenticateCaptain } = require('../../middlewares/auth.middleware')
 
 const router=express.Router();
 
@@ -46,6 +46,29 @@ router.post('/login', [
 router.get('/profile', authenticateCaptain, captainController.getCaptainProfile);
 
 router.post('/logout', captainController.logoutCaptain);
+
+router.get('/captains-in-radius', [
+    query('latitude')
+        .isFloat({ min: -90, max: 90 })
+        .withMessage('Latitude must be between -90 and 90'),
+    query('longitude')
+        .isFloat({ min: -180, max: 180 })
+        .withMessage('Longitude must be between -180 and 180'),
+    query('radius')
+        .isInt({ min: 1 })
+        .withMessage('Radius must be at least 1 km'),
+    validate
+], captainController.getCaptainsInRadius);
+
+router.put('/update-location', [
+    body('latitude')
+        .isFloat({ min: -90, max: 90 })
+        .withMessage('Latitude must be between -90 and 90'),
+    body('longitude')
+        .isFloat({ min: -180, max: 180 })
+        .withMessage('Longitude must be between -180 and 180'),
+    validate
+], authenticateCaptain, captainController.updateCaptainLocation)
 
 
 module.exports = router;

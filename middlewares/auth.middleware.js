@@ -1,6 +1,7 @@
 const { StatusCodes } = require("http-status-codes");
 const { verifyToken } = require("../utils/common/auth");
 const errorResponse = require("../utils/common/error-response");
+const successReponse = require("../utils/common/success-reponse");
 const blacklistedTokenModel = require("../models/blacklistedToken.model");
 
 async function authenticateUser(req, res, next) {

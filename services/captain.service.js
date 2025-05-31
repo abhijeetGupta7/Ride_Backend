@@ -1,5 +1,6 @@
 const CaptainRepostory = require("../repositories/captain.repository");
 const bcrypt = require("bcrypt");
+const Captain = require("../models/captain.model");
 
 class CaptainService {
     #captainRepository;
@@ -65,5 +66,48 @@ class CaptainService {
         }
     }
 
+      /**
+         * Find active captains within a radius (in kilometers)
+         * @param {[number, number]} center - [longitude, latitude]
+         * @param {number} radiusKm - Search radius in kilometers
+         * @param {string} vehicleType - Optional filter by vehicle type
+         * @returns {Promise<Array>} Array of captain documents
+        */
+        async getCaptainsInRadius(center, radiusKm, vehicleType = null) {
+            const query = {
+            status: 'active',
+            lastActive: { $gte: new Date(Date.now() - 30 * 60 * 1000) }, // Active in last 30 mins
+            location: {
+                $geoWithin: {
+                    $centerSphere: [center, radiusKm / 6378.1] // Convert km to radians
+                }
+            }
+            };
+    
+            if (vehicleType) {
+                query['vehicle.vehicleType'] = vehicleType;
+            }
+    
+            return await Captain.find(query)
+            .select('-password') // Exclude sensitive data
+            .limit(50); // Prevent over-fetching
+        }
+    
+    
+        /**
+         * Update captain's location
+         * @param {string} captainId 
+         * @param {[number, number]} coords - [longitude, latitude]
+        */
+        async updateLocation(captainId, coords) {
+            const response = await Captain.findByIdAndUpdate(captainId, {
+            location: {
+                type: 'Point',
+                coordinates: coords
+            },
+            lastActive: new Date()
+            });
+            return response;
+        }
 }
 module.exports = CaptainService;
