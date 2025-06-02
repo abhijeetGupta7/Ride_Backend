@@ -61,12 +61,11 @@ const captainSchema = new mongoose.Schema({
     type: {
       type: String,
       enum: ['Point'],
-      required: true,
-      default: 'Point'
+      required: false,
     },
     coordinates: {
       type: [Number], // [longitude, latitude]
-      required: true,
+      required: false,
       validate: {
         validator: (coords) => {
           return coords.length === 2 && 

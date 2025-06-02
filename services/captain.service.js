@@ -11,6 +11,7 @@ class CaptainService {
 
     async registerCaptain({ firstname, lastname, email, password, color, plate, capacity, vehicleType }) {
         try {
+            console.log('Working wokring')
             const hashedPassword = await bcrypt.hash(password, 10);
             const captain = await this.#captainRepository.create({
                 fullname: {
