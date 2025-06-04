@@ -21,5 +21,4 @@ app.use(cookieParser());
 
 app.use("/api",apiRouter);
 
-
 module.exports=app;

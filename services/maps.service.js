@@ -58,8 +58,8 @@ class MapsService {
             }
 
             return {
-                distance: element.distance.text,
-                duration: element.duration.text
+                distance: element.distance,
+                duration: element.duration
             };
         } catch (error) {
             console.error('Distance and duration calculation failed:', error.message);

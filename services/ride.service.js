@@ -1,6 +1,9 @@
 const RideRepository = require("../repositories/ride.repository");
 const { calculateFare } = require("../utils/calculate-fare");
 const { generateOtp } = require("../utils/generateOtp");
+const MapsService = require("./maps.service");
+
+const mapsService = new MapsService();
 
 class RideService {
     #rideRepository;
@@ -18,11 +21,28 @@ class RideService {
 
             const {fare, distance, duration} = await calculateFare(pickup, destination, vehicleType);
             const otp=generateOtp(5);
-
+            
+            const pickupCoords = await mapsService.getAddressCoordinates(pickup);
+            const destinationCoords = await mapsService.getAddressCoordinates(destination)
+            if (!pickupCoords || !destinationCoords) {
+                throw new Error("Invalid pickup or destination address");
+            }   
             const ride = await this.#rideRepository.create({
                 user,
-                pickup,
-                destination,
+                pickup:{
+                    address: pickup,
+                    coordinates: {
+                        type: 'Point',
+                        coordinates: [ pickupCoords.lng, pickupCoords.lat ]
+                    }
+                },
+                destination: {
+                    address: destination,
+                    coordinates: {
+                        type: 'Point',
+                        coordinates: [ destinationCoords.lng, destinationCoords.lat ]
+                    }
+                },
                 fare,
                 vehicleType, 
                 otp,
@@ -147,14 +167,16 @@ class RideService {
     }
 
     async addPaymentDetails({ rideId, paymentDetails }) {
-    try {
-        // temp payment details we can add, later in feature integrate with payment gateway
-        return await this.#rideRepository.addPaymentDetails(rideId, paymentDetails);
-    } catch (error) {
-        console.error("Error in addPaymentDetails:", error);
-        throw error;
+        try {
+            // temp payment details we can add, later in feature integrate with payment gateway
+            return await this.#rideRepository.addPaymentDetails(rideId, paymentDetails);
+        } catch (error) {
+            console.error("Error in addPaymentDetails:", error);
+            throw error;
+        }
     }
-}
+
+    
 }
 
 module.exports = RideService;

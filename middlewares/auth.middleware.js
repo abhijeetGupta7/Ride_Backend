@@ -6,15 +6,15 @@ const blacklistedTokenModel = require("../models/blacklistedToken.model");
 
 async function authenticateUser(req, res, next) {
     try {
-        console.log("Request Headers:", req.headers);
-        console.log("Request Cookies:", req.cookies);
+        // console.log("Request Headers:", req.headers);
+        // console.log("Request Cookies:", req.cookies);
 
         // Try to get token from Authorization header
         let token = null;
 
         if (req.cookies && req.cookies.userToken) {
             // Fallback: Try to get token from cookies
-            console.log("Token from cookies:", req.cookies.userToken);
+            // console.log("Token from cookies:", req.cookies.userToken);
             token = req.cookies.userToken;
         } else if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
             token = req.headers.authorization.split(" ")[1];
@@ -27,14 +27,14 @@ async function authenticateUser(req, res, next) {
         const decodedToken = await verifyToken(token);
 
         const isBlacklistedToken = await blacklistedTokenModel.findOne({ jti: decodedToken.jti });
-        console.log("Is Blacklisted Token:", isBlacklistedToken);
+        // console.log("Is Blacklisted Token:", isBlacklistedToken);
         if (isBlacklistedToken) {
             throw new Error("Token is blacklisted");
         }
 
         const decoded = await verifyToken(token);
         req.user = decoded;
-        console.log("Authenticated User:", req.user);
+        // console.log("Authenticated User:", req.user);
         next();
     } catch (error) {
         console.error("Authentication Error:", error);
@@ -46,15 +46,15 @@ async function authenticateUser(req, res, next) {
 
 async function authenticateCaptain(req, res, next) {
     try {
-        console.log("Request Headers:", req.headers);
-        console.log("Request Cookies:", req.cookies);
+        // console.log("Request Headers:", req.headers);
+        // console.log("Request Cookies:", req.cookies);
 
         // Try to get token from Authorization header
         let token = null;
 
         if (req.cookies && req.cookies.captainToken) {
             // Fallback: Try to get token from cookies
-            console.log("Token from cookies:", req.cookies.captainToken);
+            // console.log("Token from cookies:", req.cookies.captainToken);
             token = req.cookies.captainToken;
         } else if (req.headers.authorization && req.headers.authorization.startsWith("Bearer ")) {
             token = req.headers.authorization.split(" ")[1];
@@ -68,7 +68,7 @@ async function authenticateCaptain(req, res, next) {
 
         const isBlacklistedToken = await blacklistedTokenModel.findOne({jti: decodedToken.jti});
 
-        console.log("Is Blacklisted Token:", isBlacklistedToken);
+        // console.log("Is Blacklisted Token:", isBlacklistedToken);
         if (isBlacklistedToken) {
             throw new Error("Token is blacklisted");
         }

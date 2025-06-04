@@ -1,6 +1,7 @@
 const { query } = require('express-validator');
 const mapsController = require('../../controllers/maps.controller');
 const validate  = require('../../middlewares/validate');
+const { authenticateUser } = require('../../middlewares/auth.middleware');
 
 const router = require('express').Router();
 

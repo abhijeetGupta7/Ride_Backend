@@ -100,6 +100,10 @@ class UserService {
             throw new Error("Deletion failed");
         }
     }
+
+    async updateSocketId(userId, socketId) {
+        return await User.findByIdAndUpdate(userId, { socketId });
+    }
 }
 
 module.exports = UserService;

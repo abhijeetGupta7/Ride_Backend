@@ -172,10 +172,6 @@ async function updateCaptainLocation(req, res) {
 }
 
 
-
-
-
-
 module.exports = {
     registerCaptain,
     loginCaptain,
