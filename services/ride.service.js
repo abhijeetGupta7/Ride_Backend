@@ -70,12 +70,12 @@ class RideService {
         }
     }
 
-    async startRide({rideId, otp, captainId}) {
+    async startRide({rideId, otp}) {
         try {
-            
+            console.log("Starting ride with ID:", rideId, "and OTP:", otp);
             const ride = await this.#rideRepository.updateRideIfStatus(
                 { _id: rideId, status: 'accepted', otp: otp },
-                { status: 'ongoing', captain: captainId }
+                { status: 'ongoing'}
             )
 
             return ride;
@@ -166,6 +166,14 @@ class RideService {
         }
     }
 
+    async getRideWithUserById(rideId) {
+        try {
+            return await this.#rideRepository.getRideWithUserById(rideId);
+        } catch (error) {
+            throw error;
+        }
+    }
+
     async addPaymentDetails({ rideId, paymentDetails }) {
         try {
             // temp payment details we can add, later in feature integrate with payment gateway
@@ -174,9 +182,7 @@ class RideService {
             console.error("Error in addPaymentDetails:", error);
             throw error;
         }
-    }
-
-    
+    } 
 }
 
 module.exports = RideService;

@@ -2,7 +2,7 @@ const express = require('express');
 const { body, query } = require('express-validator');
 const rideController = require('../../controllers/ride.controller');
 const validate = require('../../middlewares/validate');
-const { authenticateUser } = require('../../middlewares/auth.middleware');
+const { authenticateUser, authenticateCaptain } = require('../../middlewares/auth.middleware');
 
 const router = express.Router();
 
@@ -13,26 +13,25 @@ router.post('/create', [
     validate
 ], authenticateUser, rideController.createRide);
 
-router.post('/accept', [
+router.patch('/accept', [
     body('rideId').notEmpty(),
     body('captainId').notEmpty(),
     validate
-], rideController.acceptRide);
+], authenticateCaptain, rideController.acceptRide);
 
-router.post('/start', [
+router.patch('/start', [
     body('rideId').notEmpty(),
     body('otp').notEmpty(),
-    body('captainId').notEmpty(),
     validate
-], rideController.startRide);
+], authenticateCaptain, rideController.startRide);
 
-router.post('/complete', [
+router.patch('/complete', [
     body('rideId').notEmpty(),
     body('duration').optional().isNumeric(),
     validate
 ], rideController.completeRide);
 
-router.post('/cancel', [
+router.patch('/cancel', [
     body('rideId').notEmpty(),
     body('reason').notEmpty(),
     validate
@@ -50,7 +49,7 @@ router.get('/captain-rides', [
     validate
 ], rideController.getCaptainRides);
 
-router.post('/feedback', [
+router.patch('/feedback', [
     body('rideId').notEmpty(),
     body('feedback').notEmpty(),
     validate

@@ -46,9 +46,6 @@ async function authenticateUser(req, res, next) {
 
 async function authenticateCaptain(req, res, next) {
     try {
-        // console.log("Request Headers:", req.headers);
-        // console.log("Request Cookies:", req.cookies);
-
         // Try to get token from Authorization header
         let token = null;
 
@@ -75,7 +72,7 @@ async function authenticateCaptain(req, res, next) {
 
         const decoded = await verifyToken(token);
         req.captain = decoded;
-        console.log("Authenticated Captain:", req.captain);
+        // console.log("Authenticated Captain:", req.captain);
         next();
     } catch (error) {
         console.error("Authentication Error:", error);

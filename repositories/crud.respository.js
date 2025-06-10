@@ -4,7 +4,6 @@ class CrudRepository {
     }
 
     async create(data) {
-        console.log(data)
         const response = await this.model.create(data); // This creates and saves in one step
         return response;
     }
@@ -15,7 +14,7 @@ class CrudRepository {
     }
 
     async get(id) {
-        const response = await this.model.findById(id); // Find document by id
+        const response = await this.model.findById(id)// Find document by id
         return response;
     }
 

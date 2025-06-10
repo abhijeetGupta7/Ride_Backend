@@ -6,7 +6,6 @@ const userService = new UserService();
 const CaptainService = require("./services/captain.service");
 const captainService = new CaptainService();
 
-
 let io;
 
 function initializeSocket(server) {

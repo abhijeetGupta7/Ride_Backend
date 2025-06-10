@@ -102,7 +102,12 @@ class UserService {
     }
 
     async updateSocketId(userId, socketId) {
-        return await User.findByIdAndUpdate(userId, { socketId });
+        try {
+            return this.#userRepository.update(userId, {socketId});
+        } catch (error) {
+            console.log('Error in updating user: ',error);
+            throw new Error("Updation failed");
+        }
     }
 }
 

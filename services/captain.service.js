@@ -98,8 +98,8 @@ class CaptainService {
     }
 
     return await Captain.find(query)
-      .select("-password") // Exclude sensitive data
-      .limit(50); // Prevent over-fetching
+      .select("-password") 
+      .limit(50); 
   }
 
   /**
@@ -113,6 +113,7 @@ class CaptainService {
         type: "Point",
         coordinates: coords,
       },
+      status:'active',
       lastActive: new Date(),
     });
     return response;

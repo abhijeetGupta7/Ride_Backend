@@ -37,8 +37,9 @@ class RideRepository extends CrudRepository {
             { $set: updatedObj },  // updatedObj can contain status, duration, fare, etc.
             { new: true }          // return the updated document
         )
-        .populate('captain', 'fullname vehicle')
-        .populate('user', 'fullname');
+        .select('+otp')
+        .populate('captain')
+        .populate('user');
     }
 
     async addFeedback(rideId, feedback) {
@@ -84,12 +85,18 @@ class RideRepository extends CrudRepository {
 
     // later add payment feature
     async addPaymentDetails(rideId, paymentDetails) {
-    return Ride.findByIdAndUpdate(
-        rideId,
-        { paymentDetails },
-        { new: true }
-    );
-}
+        return Ride.findByIdAndUpdate(
+            rideId,
+            { paymentDetails },
+            { new: true }
+        );
+    }
+
+    async getRideWithUserById(rideId) {
+        return Ride.findById(rideId)
+            .populate('user', '-passsword')
+            .select('-otp');
+    }
 }
 
 
