@@ -8,6 +8,7 @@ const {
   getEstimatesForAllVehicleTypes,
 } = require("../utils/calculate-fare");
 const { sendMessageToSocketId } = require("../socket");
+const { Socket } = require("socket.io");
 
 const rideService = new RideService();
 const captainService = new CaptainService();
@@ -102,17 +103,41 @@ async function startRide(req, res) {
 
 async function completeRide(req, res) {
   try {
-    const { rideId, duration } = req.body;
-    const ride = await rideService.completeRide({ rideId, duration });
+    const { rideId } = req.body;
+    const captainId = req.captain.captainId;
+    const ride = await rideService.completeRide({ rideId, captainId });
     if (!ride) {
       errorResponse.message = "Ride not found or not ongoing";
       return res.status(StatusCodes.NOT_FOUND).json(errorResponse);
     }
     successResponse.data = ride;
     successResponse.message = "Ride completed successfully";
+    
+      if(ride.user && ride.user.socketId) {
+      sendMessageToSocketId(ride.user.socketId, {
+        event: 'ride-completed',
+        data: ride,
+      });
+    }
+
     return res.status(StatusCodes.OK).json(successResponse);
   } catch (error) {
     errorResponse.message = "Failed to complete ride";
+    errorResponse.error = error.message || error;
+    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
+  }
+}
+
+
+async function addFeedback(req, res) {
+  try {
+    const { rideId, feedback } = req.body;
+    const ride = await rideService.addFeedback({ rideId, feedback });
+    successResponse.data = ride;
+    successResponse.message = "Feedback added successfully";
+    return res.status(StatusCodes.OK).json(successResponse);
+  } catch (error) {
+    errorResponse.message = "Failed to add feedback";
     errorResponse.error = error.message || error;
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
   }
@@ -159,20 +184,6 @@ async function getCaptainRides(req, res) {
     return res.status(StatusCodes.OK).json(successResponse);
   } catch (error) {
     errorResponse.message = "Failed to fetch captain rides";
-    errorResponse.error = error.message || error;
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
-  }
-}
-
-async function addFeedback(req, res) {
-  try {
-    const { rideId, feedback } = req.body;
-    const ride = await rideService.addFeedback({ rideId, feedback });
-    successResponse.data = ride;
-    successResponse.message = "Feedback added successfully";
-    return res.status(StatusCodes.OK).json(successResponse);
-  } catch (error) {
-    errorResponse.message = "Failed to add feedback";
     errorResponse.error = error.message || error;
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
   }

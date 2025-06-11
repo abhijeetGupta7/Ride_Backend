@@ -20,7 +20,7 @@ class RideService {
             }   
 
             const {fare, distance, duration} = await calculateFare(pickup, destination, vehicleType);
-            const otp=generateOtp(5);
+            const otp=generateOtp(6);
             
             const pickupCoords = await mapsService.getAddressCoordinates(pickup);
             const destinationCoords = await mapsService.getAddressCoordinates(destination)
@@ -65,7 +65,7 @@ class RideService {
             )
             return ride;
         } catch (error) {
-            console.error("Error in confirmRide:", error);
+            console.error("Error in Accept Ride:", error);
             throw error;
         }
     }
@@ -77,7 +77,7 @@ class RideService {
                 { _id: rideId, status: 'accepted', otp: otp },
                 { status: 'ongoing'}
             )
-
+            console.log(ride);
             return ride;
         } catch (error) {
             console.error("Error in startRide:", error);
@@ -85,18 +85,15 @@ class RideService {
         }
     }
 
-    async completeRide({rideId, duration}) {
+    async completeRide({rideId, captainId}) {
         try {
 
             // later on we can add extra logic to recalculate fare based on certain conditions like traffic, route taken, user kept waiting, etc.
-            
+        
             let updatedObject = { status: 'completed' };
-            if(duration) {
-                updatedObject.duration = duration;
-            }
 
             const ride = await this.#rideRepository.updateRideIfStatus(
-                { _id: rideId, status: 'ongoing' },
+                { _id: rideId, captain:captainId, status: 'ongoing' },
                 updatedObject
             );
             return ride;

@@ -27,9 +27,14 @@ router.patch('/start', [
 
 router.patch('/complete', [
     body('rideId').notEmpty(),
-    body('duration').optional().isNumeric(),
     validate
-], rideController.completeRide);
+], authenticateCaptain,rideController.completeRide);
+
+router.patch('/feedback', [
+    body('rideId').notEmpty(),
+    body('feedback').notEmpty(),
+    validate
+], authenticateUser, rideController.addFeedback);
 
 router.patch('/cancel', [
     body('rideId').notEmpty(),
@@ -48,12 +53,6 @@ router.get('/captain-rides', [
     query('status').optional(),
     validate
 ], rideController.getCaptainRides);
-
-router.patch('/feedback', [
-    body('rideId').notEmpty(),
-    body('feedback').notEmpty(),
-    validate
-], rideController.addFeedback);
 
 router.get('/nearby', [
     query('coords').isArray({ min: 2, max: 2 }),

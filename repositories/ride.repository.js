@@ -43,6 +43,7 @@ class RideRepository extends CrudRepository {
     }
 
     async addFeedback(rideId, feedback) {
+        console.log('adding feedback', feedback)
         return Ride.findByIdAndUpdate(
             rideId,
             { feedback },       //   { rating, comment }

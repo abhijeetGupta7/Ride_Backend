@@ -72,7 +72,7 @@ async function authenticateCaptain(req, res, next) {
 
         const decoded = await verifyToken(token);
         req.captain = decoded;
-        // console.log("Authenticated Captain:", req.captain);
+        console.log("Authenticated Captain:", req.captain);
         next();
     } catch (error) {
         console.error("Authentication Error:", error);
