@@ -81,6 +81,7 @@ function sendMessageToSocketId(socketId, messageObject) {
     return false;
   }
 
+  console.log(socketId, messageObject);
   io.to(socketId).emit(messageObject.event, messageObject.data);
   return true;
 }
