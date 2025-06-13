@@ -35,7 +35,7 @@ async function clearNotifiedCaptains(rideId) {
  * Store captain's socket ID globally
  */
 async function storeCaptainSocket(captainId, socketId) {
-//  console.log('inside redis captins socekt store', captainId, socketId)
+  console.log('inside redis captins socekt store', captainId, socketId)
     await redis.hset(CAPTAIN_SOCKET_KEY, captainId, socketId);
     const socket=await redis.hget(CAPTAIN_SOCKET_KEY, captainId);
     console.log('check', socket);

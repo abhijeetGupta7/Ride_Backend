@@ -88,7 +88,7 @@ async function acceptRide(req, res) {
 
     // Notify other captains that ride was accepted
     const notifiedCaptainIds = await getNotifiedCaptains(ride._id.toString());
-
+    
     for (const notifiedCaptainId of notifiedCaptainIds) {
       console.log('debug ride accepting all: ',notifiedCaptainId, captainId);
       if (notifiedCaptainId != captainId) {
