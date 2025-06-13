@@ -56,7 +56,7 @@ This is the backend service for **Ridee**, a real-time ride-sharing platform. It
 ---
 
 
-## ⚙️ Environment Variables
+## ⚙️ Environment Variables {#environment-variables}
 
 Create a `.env` file in the project root with:
 
@@ -1021,6 +1021,8 @@ Estimates fares for all vehicle types.
   "message": "Fare estimates for all vehicle types"
 }
 ```
+
+
 
 
 
