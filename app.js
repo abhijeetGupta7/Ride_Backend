@@ -21,7 +21,7 @@ app.use(cors({
 app.get('/',(req,res)=> {
     return res.status(200).json({
         "status": "API is live"
-    })
+    });
 })
 
 app.use("/api",apiRouter);
