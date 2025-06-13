@@ -14,8 +14,16 @@ if (isProduction) {
     token: process.env.UPSTASH_REDIS_REST_TOKEN,
     tls: { rejectUnauthorized: false },
   },
-
 );
+
+const test = async () => {
+  await redis.hset("captain_sockets", "test_captain", "test_socket_123");
+  const result = await redis.hget("captain_sockets", "test_captain");
+  console.log("Manual HGET:", result);
+};
+
+test();
+
 } else {
   const Redis = require("ioredis");
   redis = new Redis(); 
