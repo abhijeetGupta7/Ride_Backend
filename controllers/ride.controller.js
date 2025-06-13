@@ -8,7 +8,12 @@ const {
   getEstimatesForAllVehicleTypes,
 } = require("../utils/calculate-fare");
 const { sendMessageToSocketId } = require("../socket");
-const { Socket } = require("socket.io");
+const {
+  storeNotifiedCaptains,
+  getNotifiedCaptains,
+  getCaptainSocket,
+  clearNotifiedCaptains,
+} = require("../utils/redisHelper");
 
 const rideService = new RideService();
 const captainService = new CaptainService();
@@ -17,31 +22,49 @@ async function createRide(req, res) {
   try {
     const { pickup, destination, vehicleType } = req.body;
     const user = req.user.userId;
+
+    if (!pickup || !destination || !vehicleType) {
+      errorResponse.message = "Missing required fields";
+      return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
+    }
+
     const ride = await rideService.createRide({
       user,
       pickup,
       destination,
       vehicleType,
     });
+
     successResponse.data = ride;
     successResponse.message = "Ride created successfully";
     res.status(StatusCodes.CREATED).json(successResponse);
 
+    // Find nearby captains and notify them
     const nearbyCaptains = await captainService.getCaptainsInRadius(
       ride.pickup.coordinates.coordinates,
-      250,
+      1000,
       vehicleType
     );
 
     const rideWithUser = await rideService.getRideWithUserById(ride._id);
 
-    nearbyCaptains.map((captain) => {
-      sendMessageToSocketId(captain.socketId, {
-        event: "new-ride",
-        data: rideWithUser,
-      });
-    });
+    const captainIds = [];
+    for (const captain of nearbyCaptains) {
+      if (captain.socketId) {
+        sendMessageToSocketId(captain.socketId, {
+          event: "new-ride",
+          data: rideWithUser,
+        });
+        captainIds.push(captain._id.toString());
+      }
+    }
+
+    // Store notified captain ids in redis
+    if (captainIds.length > 0) {
+      await storeNotifiedCaptains(ride._id.toString(), captainIds);
+    }
   } catch (error) {
+    console.error("Create ride error:", error);
     errorResponse.message = "Failed to create ride";
     errorResponse.error = error.message || error;
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
@@ -51,50 +74,81 @@ async function createRide(req, res) {
 async function acceptRide(req, res) {
   try {
     const { rideId, captainId } = req.body;
+
+    if (!rideId || !captainId) {
+      errorResponse.message = "Missing rideId or captainId";
+      return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
+    }
+
     const ride = await rideService.acceptRide({ rideId, captainId });
     if (!ride) {
       errorResponse.message = "Ride not found or not pending";
       return res.status(StatusCodes.NOT_FOUND).json(errorResponse);
     }
+
     successResponse.data = ride;
     successResponse.message = "Ride accepted successfully";
+    res.status(StatusCodes.OK).json(successResponse);
 
-    console.log(ride);
-
+    // Notify user
     if (ride.user && ride.user.socketId) {
       sendMessageToSocketId(ride.user.socketId, {
         event: "driver-found",
         data: ride,
       });
     }
-    return res.status(StatusCodes.OK).json(successResponse);
+
+    // Notify other captains that ride was accepted
+    const notifiedCaptainIds = await getNotifiedCaptains(ride._id.toString());
+
+    for (const notifiedCaptainId of notifiedCaptainIds) {
+      if (notifiedCaptainId != captainId) {
+        const captainSocketId = await getCaptainSocket(notifiedCaptainId);
+        if (captainSocketId) {
+          sendMessageToSocketId(captainSocketId, {
+            event: "ride-request-already-accepted",
+            data: ride,
+          });
+        }
+      }
+    }
+
+    await clearNotifiedCaptains(ride._id.toString());
   } catch (error) {
+    console.error("Accept ride error:", error);
     errorResponse.message = "Failed to accept ride";
     errorResponse.error = error.message || error;
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
   }
 }
 
-// for confirming the otp and starting the ride
 async function startRide(req, res) {
   try {
     const { rideId, otp } = req.body;
+
+    if (!rideId || !otp) {
+      errorResponse.message = "Missing rideId or OTP";
+      return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
+    }
+
     const ride = await rideService.startRide({ rideId, otp });
     if (!ride) {
       errorResponse.message = "Ride not found or OTP invalid";
       return res.status(StatusCodes.NOT_FOUND).json(errorResponse);
     }
+
     successResponse.data = ride;
     successResponse.message = "Ride started successfully";
+    res.status(StatusCodes.OK).json(successResponse);
 
-    if(ride.user && ride.user.socketId) {
+    if (ride.user && ride.user.socketId) {
       sendMessageToSocketId(ride.user.socketId, {
         event: "ride-started",
         data: ride,
       });
     }
-    return res.status(StatusCodes.OK).json(successResponse);
   } catch (error) {
+    console.error("Start ride error:", error);
     errorResponse.message = "Failed to start ride";
     errorResponse.error = error.message || error;
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
@@ -105,38 +159,51 @@ async function completeRide(req, res) {
   try {
     const { rideId } = req.body;
     const captainId = req.captain.captainId;
+
+    if (!rideId) {
+      errorResponse.message = "Missing rideId";
+      return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
+    }
+
     const ride = await rideService.completeRide({ rideId, captainId });
     if (!ride) {
       errorResponse.message = "Ride not found or not ongoing";
       return res.status(StatusCodes.NOT_FOUND).json(errorResponse);
     }
+
     successResponse.data = ride;
     successResponse.message = "Ride completed successfully";
-    
-      if(ride.user && ride.user.socketId) {
+    res.status(StatusCodes.OK).json(successResponse);
+
+    if (ride.user && ride.user.socketId) {
       sendMessageToSocketId(ride.user.socketId, {
-        event: 'ride-completed',
+        event: "ride-completed",
         data: ride,
       });
     }
-
-    return res.status(StatusCodes.OK).json(successResponse);
   } catch (error) {
+    console.error("Complete ride error:", error);
     errorResponse.message = "Failed to complete ride";
     errorResponse.error = error.message || error;
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
   }
 }
 
-
 async function addFeedback(req, res) {
   try {
     const { rideId, feedback } = req.body;
+
+    if (!rideId || !feedback) {
+      errorResponse.message = "Missing rideId or feedback";
+      return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
+    }
+
     const ride = await rideService.addFeedback({ rideId, feedback });
     successResponse.data = ride;
     successResponse.message = "Feedback added successfully";
     return res.status(StatusCodes.OK).json(successResponse);
   } catch (error) {
+    console.error("Add feedback error:", error);
     errorResponse.message = "Failed to add feedback";
     errorResponse.error = error.message || error;
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
@@ -145,16 +212,39 @@ async function addFeedback(req, res) {
 
 async function cancelRide(req, res) {
   try {
-    const { rideId, reason } = req.body;
-    const ride = await rideService.cancelRide({ rideId, reason });
+    const { rideId } = req.body;
+
+    if (!rideId) {
+      errorResponse.message = "Missing rideId";
+      return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
+    }
+
+    const ride = await rideService.cancelRide({ rideId });
     if (!ride) {
       errorResponse.message = "Ride not found or already completed";
       return res.status(StatusCodes.NOT_FOUND).json(errorResponse);
     }
+
     successResponse.data = ride;
     successResponse.message = "Ride cancelled successfully";
-    return res.status(StatusCodes.OK).json(successResponse);
+    res.status(StatusCodes.OK).json(successResponse);
+
+    // Notify all captains that were notified about this ride
+    const notifiedCaptainIds = await getNotifiedCaptains(ride._id.toString());
+
+    for (const captainId of notifiedCaptainIds) {
+      const captainSocketId = await getCaptainSocket(captainId);
+      if (captainSocketId) {
+        sendMessageToSocketId(captainSocketId, {
+          event: "ride-request-cancelled",
+          data: ride,
+        });
+      }
+    }
+
+    await clearNotifiedCaptains(ride._id.toString());
   } catch (error) {
+    console.error("Cancel ride error:", error);
     errorResponse.message = "Failed to cancel ride";
     errorResponse.error = error.message || error;
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
@@ -164,11 +254,18 @@ async function cancelRide(req, res) {
 async function getUserRides(req, res) {
   try {
     const { userId, status } = req.query;
+
+    if (!userId) {
+      errorResponse.message = "Missing userId";
+      return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
+    }
+
     const rides = await rideService.getUserRides({ userId, status });
     successResponse.data = rides;
     successResponse.message = "User rides fetched successfully";
     return res.status(StatusCodes.OK).json(successResponse);
   } catch (error) {
+    console.error("Get user rides error:", error);
     errorResponse.message = "Failed to fetch user rides";
     errorResponse.error = error.message || error;
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
@@ -178,11 +275,18 @@ async function getUserRides(req, res) {
 async function getCaptainRides(req, res) {
   try {
     const { captainId, status } = req.query;
+
+    if (!captainId) {
+      errorResponse.message = "Missing captainId";
+      return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
+    }
+
     const rides = await rideService.getCaptainRides({ captainId, status });
     successResponse.data = rides;
     successResponse.message = "Captain rides fetched successfully";
     return res.status(StatusCodes.OK).json(successResponse);
   } catch (error) {
+    console.error("Get captain rides error:", error);
     errorResponse.message = "Failed to fetch captain rides";
     errorResponse.error = error.message || error;
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
@@ -192,6 +296,12 @@ async function getCaptainRides(req, res) {
 async function findNearbyPendingRides(req, res) {
   try {
     const { coords, radiusKm } = req.query;
+
+    if (!coords || !radiusKm) {
+      errorResponse.message = "Missing coordinates or radius";
+      return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
+    }
+
     const rides = await rideService.findNearbyPendingRides({
       coords: coords.map(Number),
       radiusKm: Number(radiusKm),
@@ -200,6 +310,7 @@ async function findNearbyPendingRides(req, res) {
     successResponse.message = "Nearby pending rides fetched successfully";
     return res.status(StatusCodes.OK).json(successResponse);
   } catch (error) {
+    console.error("Find nearby rides error:", error);
     errorResponse.message = "Failed to fetch nearby pending rides";
     errorResponse.error = error.message || error;
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
@@ -209,56 +320,76 @@ async function findNearbyPendingRides(req, res) {
 async function getRideById(req, res) {
   try {
     const { rideId } = req.params;
+
+    if (!rideId) {
+      errorResponse.message = "Missing rideId";
+      return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
+    }
+
     const ride = await rideService.getRideById(rideId);
     if (!ride) {
       errorResponse.message = "Ride not found";
       return res.status(StatusCodes.NOT_FOUND).json(errorResponse);
     }
+
     successResponse.data = ride;
     successResponse.message = "Ride fetched successfully";
     return res.status(StatusCodes.OK).json(successResponse);
   } catch (error) {
+    console.error("Get ride by ID error:", error);
     errorResponse.message = "Failed to fetch ride";
     errorResponse.error = error.message || error;
     return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
   }
 }
 
-// Estimate fare for a single vehicle type
 async function estimateFare(req, res) {
   try {
     const { pickup, destination, vehicleType } = req.body;
+
+    if (!pickup || !destination || !vehicleType) {
+      errorResponse.message = "Missing required fields";
+      return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
+    }
+
     const { fare, distance, duration } = await calculateFare(
       pickup,
       destination,
       vehicleType
     );
+
     successResponse.data = { fare, distance, duration };
     successResponse.message = "Fare estimated successfully";
     return res.status(StatusCodes.OK).json(successResponse);
   } catch (error) {
+    console.error("Estimate fare error:", error);
     errorResponse.message = "Failed to estimate fare";
     errorResponse.error = error.message || error;
     return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
   }
 }
 
-// Estimate fare for all vehicle types
 async function estimateFareForAllTypes(req, res) {
   try {
     const { pickup, destination } = req.query;
+
+    if (!pickup || !destination) {
+      errorResponse.message = "Missing pickup or destination";
+      return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
+    }
+
     const estimates = await getEstimatesForAllVehicleTypes(pickup, destination);
     successResponse.data = estimates;
     successResponse.message = "Fare estimates for all vehicle types";
     return res.status(StatusCodes.OK).json(successResponse);
   } catch (error) {
+    console.error("Estimate all fares error:", error);
     errorResponse.message = "Failed to estimate fares";
     errorResponse.error = error.message || error;
     return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
   }
 }
 
-// Add these to your exports:
 module.exports = {
   createRide,
   acceptRide,

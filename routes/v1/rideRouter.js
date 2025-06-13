@@ -38,9 +38,8 @@ router.patch('/feedback', [
 
 router.patch('/cancel', [
     body('rideId').notEmpty(),
-    body('reason').notEmpty(),
     validate
-], rideController.cancelRide);
+], authenticateUser, rideController.cancelRide);
 
 router.get('/user-rides', [
     query('userId').notEmpty(),

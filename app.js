@@ -6,7 +6,6 @@ const { CLIENT_URL } = require('./config/server-config');
 
 const app=express();
 
-// Global Middleware
 app.use(cors({
     origin: CLIENT_URL,
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],

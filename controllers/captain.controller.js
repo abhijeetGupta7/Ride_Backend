@@ -4,14 +4,12 @@ const successReponse = require('../utils/common/success-reponse');
 const errorResponse = require('../utils/common/error-response');
 const { createToken, verifyToken } = require('../utils/common/auth');
 const blacklistedTokenModel = require("../models/blacklistedToken.model");
-const MapsService = require('../services/maps.service');
 
 const captainService = new CaptainService();
-const mapsService = new MapsService();
 
 async function registerCaptain(req,res) {
     try {
-        console.log('Registering Captain:', req.body);
+        // console.log('Registering Captain:', req.body);
         const { fullname, email, password, vehicle } = req.body;
         
         const captain = await captainService.registerCaptain({
@@ -84,7 +82,7 @@ async function loginCaptain(req, res) {
 async function getCaptainProfile(req, res) {
     try {
         const captainId = req.captain?.captainId;
-        console.log('Captain ID:', captainId);
+        // console.log('Captain ID:', captainId);
         const captain = await captainService.getCaptain(captainId);
         if (!captain) {
             errorResponse.message = 'Captain not found';

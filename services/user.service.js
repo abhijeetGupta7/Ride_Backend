@@ -1,5 +1,4 @@
 const UserRepository = require("../repositories/user.repository");
-const { createToken, verifyToken } = require("../utils/common/auth");
 const bcrypt = require("bcrypt");
 
 class UserService {
@@ -48,22 +47,6 @@ class UserService {
             throw error;
         }
     }
-
-    // async authenticateUser(token) {
-    //     try {
-    //         const decodedToken = await verifyToken(token);
-
-    //         const user = await this.#userRepository.get(decodedToken.userId);
-    //         if (!user) {
-    //             throw new Error("User not found");
-    //         }
-
-    //         return decodedToken;
-    //     } catch (error) {
-    //         console.error("Error in authenticateUser:", error);
-    //         throw new Error("Authentication failed");
-    //     }
-    // }
 
     async getUser(userId) {
         try {

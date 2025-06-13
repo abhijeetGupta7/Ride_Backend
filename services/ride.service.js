@@ -103,14 +103,14 @@ class RideService {
         }
     }
 
-    async cancelRide({rideId, reason}) {
+    async cancelRide({rideId}) {
         try {
             let ride = await this.#rideRepository.get(rideId);
             if (!ride || ride.status === 'completed') {
                 throw new Error("Ride not found or already completed");
             }
 
-            ride = await this.#rideRepository.cancelRide(rideId, reason);
+            ride = await this.#rideRepository.cancelRide(rideId);
             return ride;
         } catch (error) {
             console.error("Error in cancelRide:", error);

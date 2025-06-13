@@ -4,7 +4,6 @@ const { createToken, verifyToken } = require("../utils/common/auth");
 const successReponse = require("../utils/common/success-reponse");
 const errorResponse = require("../utils/common/error-response");
 const blacklistedTokenModel = require("../models/blacklistedToken.model");
-const { NODE_ENV } = require("../config/server-config");
 
 const userService = new UserService();
 

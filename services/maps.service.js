@@ -1,4 +1,3 @@
-// map service for ride hailing app
 const axios = require('axios');
 const { GOOGLE_MAPS_API_KEY } = require('../config/server-config');
 

@@ -1,5 +1,5 @@
 const jwt = require("jsonwebtoken");
-const crypto = require("crypto"); // Node's built-in crypto module
+const crypto = require("crypto"); 
 const { JWT_SECRET, NODE_ENV } = require("../../config/server-config");
 
 async function createToken(payload) {
@@ -16,7 +16,7 @@ async function createToken(payload) {
             JWT_SECRET,
             { 
                 expiresIn: '24h', 
-                algorithm: 'HS256' // Explicitly specified algorithm
+                algorithm: 'HS256' 
             },
             (err, token) => {
                 if (err) {
@@ -39,7 +39,7 @@ async function verifyToken(token) {
             token,
             JWT_SECRET,
             { 
-                algorithms: ["HS256"], // Prevent algorithm confusion attacks
+                algorithms: ["HS256"], 
                 ignoreExpiration: false // Enforce expiry checks
             },
             (err, decodedToken) => {
