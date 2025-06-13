@@ -106,7 +106,9 @@ async function acceptRide(req, res) {
       if (notifiedCaptainId != captainId) {
         console.log('debug ride accepting: ',notifiedCaptainId, captainId);
         const captainSocketId = await getCaptainSocket(notifiedCaptainId);
+        console.log('before notifying: ',captainSocketId);
         if (captainSocketId) {
+          console.log('inside it');
           sendMessageToSocketId(captainSocketId, {
             event: "ride-request-already-accepted",
             data: ride,
