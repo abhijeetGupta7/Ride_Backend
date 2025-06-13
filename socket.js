@@ -85,4 +85,4 @@ function sendMessageToSocketId(socketId, messageObject) {
   return true;
 }
 
-module.exports = { initializeSocket, sendMessageToSocketId };
+module.exports = { initializeSocket, sendMessageToSocketId, io };

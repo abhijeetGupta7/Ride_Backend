@@ -102,7 +102,9 @@ async function acceptRide(req, res) {
     const notifiedCaptainIds = await getNotifiedCaptains(ride._id.toString());
 
     for (const notifiedCaptainId of notifiedCaptainIds) {
+      console.log('debug ride accepting all: ',notifiedCaptainId, captainId);
       if (notifiedCaptainId != captainId) {
+        console.log('debug ride accepting: ',notifiedCaptainId, captainId);
         const captainSocketId = await getCaptainSocket(notifiedCaptainId);
         if (captainSocketId) {
           sendMessageToSocketId(captainSocketId, {
