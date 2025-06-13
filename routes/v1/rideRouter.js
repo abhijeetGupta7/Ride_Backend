@@ -41,24 +41,6 @@ router.patch('/cancel', [
     validate
 ], authenticateUser, rideController.cancelRide);
 
-router.get('/user-rides', [
-    query('userId').notEmpty(),
-    query('status').optional(),
-    validate
-], rideController.getUserRides);
-
-router.get('/captain-rides', [
-    query('captainId').notEmpty(),
-    query('status').optional(),
-    validate
-], rideController.getCaptainRides);
-
-router.get('/nearby', [
-    query('coords').isArray({ min: 2, max: 2 }),
-    query('radiusKm').optional().isNumeric(),
-    validate
-], rideController.findNearbyPendingRides);
-
 // Estimate fare for a single vehicle type
 router.get('/estimate-fare', [
     query('pickup').notEmpty(),
@@ -74,10 +56,6 @@ router.get('/estimate-fare-all', [
     validate
 ],rideController.estimateFareForAllTypes);
 
-// router.get('/:rideId', [
-//     param('rideId').notEmpty(),
-//     validate
-// ], rideController.getRideById);
 
 
 module.exports = router;

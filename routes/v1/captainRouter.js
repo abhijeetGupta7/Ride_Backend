@@ -60,7 +60,7 @@ router.get('/captains-in-radius', [
     validate
 ], captainController.getCaptainsInRadius);
 
-router.put('/update-location', [
+router.patch('/update-location', [
     body('latitude')
         .isFloat({ min: -90, max: 90 })
         .withMessage('Latitude must be between -90 and 90'),

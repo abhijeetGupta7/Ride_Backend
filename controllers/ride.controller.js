@@ -251,72 +251,6 @@ async function cancelRide(req, res) {
   }
 }
 
-async function getUserRides(req, res) {
-  try {
-    const { userId, status } = req.query;
-
-    if (!userId) {
-      errorResponse.message = "Missing userId";
-      return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
-    }
-
-    const rides = await rideService.getUserRides({ userId, status });
-    successResponse.data = rides;
-    successResponse.message = "User rides fetched successfully";
-    return res.status(StatusCodes.OK).json(successResponse);
-  } catch (error) {
-    console.error("Get user rides error:", error);
-    errorResponse.message = "Failed to fetch user rides";
-    errorResponse.error = error.message || error;
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
-  }
-}
-
-async function getCaptainRides(req, res) {
-  try {
-    const { captainId, status } = req.query;
-
-    if (!captainId) {
-      errorResponse.message = "Missing captainId";
-      return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
-    }
-
-    const rides = await rideService.getCaptainRides({ captainId, status });
-    successResponse.data = rides;
-    successResponse.message = "Captain rides fetched successfully";
-    return res.status(StatusCodes.OK).json(successResponse);
-  } catch (error) {
-    console.error("Get captain rides error:", error);
-    errorResponse.message = "Failed to fetch captain rides";
-    errorResponse.error = error.message || error;
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
-  }
-}
-
-async function findNearbyPendingRides(req, res) {
-  try {
-    const { coords, radiusKm } = req.query;
-
-    if (!coords || !radiusKm) {
-      errorResponse.message = "Missing coordinates or radius";
-      return res.status(StatusCodes.BAD_REQUEST).json(errorResponse);
-    }
-
-    const rides = await rideService.findNearbyPendingRides({
-      coords: coords.map(Number),
-      radiusKm: Number(radiusKm),
-    });
-    successResponse.data = rides;
-    successResponse.message = "Nearby pending rides fetched successfully";
-    return res.status(StatusCodes.OK).json(successResponse);
-  } catch (error) {
-    console.error("Find nearby rides error:", error);
-    errorResponse.message = "Failed to fetch nearby pending rides";
-    errorResponse.error = error.message || error;
-    return res.status(StatusCodes.INTERNAL_SERVER_ERROR).json(errorResponse);
-  }
-}
-
 async function getRideById(req, res) {
   try {
     const { rideId } = req.params;
@@ -396,10 +330,7 @@ module.exports = {
   startRide,
   completeRide,
   cancelRide,
-  getUserRides,
-  getCaptainRides,
   addFeedback,
-  findNearbyPendingRides,
   getRideById,
   estimateFare,
   estimateFareForAllTypes,

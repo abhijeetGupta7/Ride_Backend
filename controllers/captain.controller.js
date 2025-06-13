@@ -164,7 +164,7 @@ async function updateCaptainLocation(req, res) {
     }
 
     const coords = [parseFloat(longitude), parseFloat(latitude)];
-    const updatedCaptain = await captainService.updateCaptainLocation(
+    const updatedCaptain = await captainService.updateLocation(
       captainId,
       coords
     );

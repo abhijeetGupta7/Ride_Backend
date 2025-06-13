@@ -50,18 +50,6 @@ class RideRepository extends CrudRepository {
         );
     }
 
-    async findPendingRidesNearPickup(coords, radiusKm = 3) {   //  coords: [longitude, latitude]
-        return Ride.find({
-            status: 'pending',
-            "pickup.coordinates": {
-                $nearSphere: {
-                    $geometry: { type: "Point", coordinates: coords },
-                    $maxDistance: radiusKm * 1000 // meters
-                }
-            }
-        });
-    }   
-    
     async findRideByIdWithOtp(rideId) {
         return Ride.findById(rideId)
             .select('+otp')
