@@ -86,18 +86,6 @@ async function acceptRide(req, res) {
       return res.status(StatusCodes.NOT_FOUND).json(errorResponse);
     }
 
-    successResponse.data = ride;
-    successResponse.message = "Ride accepted successfully";
-    res.status(StatusCodes.OK).json(successResponse);
-
-    // Notify user
-    if (ride.user && ride.user.socketId) {
-      sendMessageToSocketId(ride.user.socketId, {
-        event: "driver-found",
-        data: ride,
-      });
-    }
-
     // Notify other captains that ride was accepted
     const notifiedCaptainIds = await getNotifiedCaptains(ride._id.toString());
 
@@ -117,7 +105,20 @@ async function acceptRide(req, res) {
       }
     }
 
+    // Notify user
+    if (ride.user && ride.user.socketId) {
+      sendMessageToSocketId(ride.user.socketId, {
+        event: "driver-found",
+        data: ride,
+      });
+    }
+
     await clearNotifiedCaptains(ride._id.toString());
+    
+    successResponse.data = ride;
+    successResponse.message = "Ride accepted successfully";
+    res.status(StatusCodes.OK).json(successResponse);
+
   } catch (error) {
     console.error("Accept ride error:", error);
     errorResponse.message = "Failed to accept ride";
