@@ -6,10 +6,10 @@ This is the backend service for **Ridee**, a real-time ride-sharing platform. It
 
 ## 📚 Table of Contents
 
-* [Key Features](#key-features)
-* [Tech Stack](#tech-stack)
-* [Environment Variables](#environment-variables)
-* [Getting Started](#getting-started-local)
+* [Key Features](#-key-features)
+* [Tech Stack](#-tech-stack)
+* [Environment Variables](#-environment-variables)
+* [Getting Started](#-getting-started-local)
 * [API Documentation](#api-documentation)
   * [User Routes](#user-routes)
   * [Captain Routes](#captain-routes)
@@ -17,7 +17,6 @@ This is the backend service for **Ridee**, a real-time ride-sharing platform. It
   * [Maps Routes](#maps-routes)
 
 ---
-
 
 ## 🎯 Key Features
 
