@@ -1,7 +1,7 @@
 const redis = require("../config/redis-config");
 
 const NOTIFIED_CAPTAINS_PREFIX = "ride:notified:";
-const CAPTAIN_SOCKET_KEY = "captain:sockets";
+const CAPTAIN_SOCKET_KEY = "captain:sockets:";
 const TTL_SECONDS = 60 * 30; // 30 minutes
 
 /**
@@ -12,7 +12,9 @@ async function storeNotifiedCaptains(rideId, captainIds = []) {
   const key = `${NOTIFIED_CAPTAINS_PREFIX}${rideId}`;
 
   await redis.sadd(key, ...captainIds);
-  await redis.expire(key, TTL_SECONDS); // auto-expire after 15 seconds
+    const check = `${NOTIFIED_CAPTAINS_PREFIX}${rideId}`;
+  console.log('other check: ', check);
+  await redis.expire(key, TTL_SECONDS); 
 }
 
 /**
