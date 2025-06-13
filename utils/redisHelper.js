@@ -12,8 +12,6 @@ async function storeNotifiedCaptains(rideId, captainIds = []) {
   const key = `${NOTIFIED_CAPTAINS_PREFIX}${rideId}`;
 
   await redis.sadd(key, ...captainIds);
-    const check = `${NOTIFIED_CAPTAINS_PREFIX}${rideId}`;
-  console.log('other check: ', check);
   await redis.expire(key, TTL_SECONDS); 
 }
 
