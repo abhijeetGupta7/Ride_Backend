@@ -10,6 +10,7 @@ This is the backend service for **Ridee**, a real-time ride-sharing platform. It
 * [Tech Stack](#-tech-stack)
 * [Environment Variables](#environment-variables)
 * [Getting Started](#-getting-started-local)
+* [Deployment](#-deployment)
 * [API Documentation](#api-documentation)
   * [User Routes](#user-routes)
   * [Captain Routes](#captain-routes)
@@ -63,7 +64,7 @@ Create a `.env` file in the project root with:
 ```env
 # Server
 PORT=8050
-NODE_ENV=development
+NODE_ENV=development  #  set to production for deployment
 
 # MongoDB
 MONGO_URI=mongodb+srv://<user>:<pass>@cluster0.mongodb.net/ridee
@@ -110,6 +111,45 @@ UPSTASH_REDIS_REST_TOKEN=<your-upstash-token>
 5. **Socket.io**
 
    * Clients should connect to `ws://localhost:8050` or the same origin to receive real-time events.
+
+---
+
+## 🚀 Deployment
+
+### Live Backend URL
+[https://ride-backend-m1x6.onrender.com](https://ride-backend-m1x6.onrender.com)
+
+### Prerequisites
+- MongoDB Atlas cluster
+- Upstash Redis database
+- Render.com account (or alternative hosting)
+
+### Deployment Steps
+
+1. **Set up MongoDB Atlas**:
+   - Create a cluster at [mongodb.com/atlas](https://www.mongodb.com/atlas)
+   - Whitelist IP `0.0.0.0/0` (temporarily) or your Render server IP
+   - Get connection string:
+     ```
+     mongodb+srv://<username>:<password>@cluster0.mongodb.net/ridee
+     ```
+
+2. **Configure Upstash Redis**:
+   - Create database at [upstash.com](https://upstash.com)
+   - Copy REST URL and token
+
+3. **Prepare Environment Variables**:
+   - Already given in the Environment Variables section above
+   
+4. **Deploy to Render**:
+   - Connect your GitHub repository
+   - Set environment variables in Render dashboard
+   - Use these build settings:
+     ```
+     Build Command: npm install
+     Start Command: node index.js
+     ```
+   - Enable "Auto-Deploy" on git push
 
 ---
 
@@ -1021,6 +1061,8 @@ Estimates fares for all vehicle types.
   "message": "Fare estimates for all vehicle types"
 }
 ```
+
+
 
 
 
