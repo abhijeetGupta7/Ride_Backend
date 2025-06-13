@@ -35,18 +35,8 @@ async function clearNotifiedCaptains(rideId) {
  * Store captain's socket ID globally
  */
 async function storeCaptainSocket(captainId, socketId) {
-    console.log("Attempting to store socket:", captainId, socketId);
-  console.log("CAPTAIN_SOCKET_KEY =", CAPTAIN_SOCKET_KEY, typeof CAPTAIN_SOCKET_KEY);
-
-  try {
-    await redis.hset(CAPTAIN_SOCKET_KEY, captainId.toString(), socketId);
-    const result = await redis.hget(CAPTAIN_SOCKET_KEY, captainId);
-    console.log("Redis hget result:", result);
-  } catch (error) {
-    console.error("Redis store error:", error);
-  }
+    await redis.hset(CAPTAIN_SOCKET_KEY, { [captainId.toString()]: socketId});
 }
-
 
 /**
  * Get socket ID for one captain
